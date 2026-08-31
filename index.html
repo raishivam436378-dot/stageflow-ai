@@ -1,1 +1,784 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>StageFlow AI</title>
 
+<style>
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:Arial,Helvetica,sans-serif;
+  background:#f4f7fb;
+  color:#172033;
+}
+header{
+  background:linear-gradient(135deg,#111827,#2563eb);
+  color:white;
+  padding:24px 18px;
+}
+header h1{margin:0;font-size:28px}
+header p{margin:7px 0 0;opacity:.85}
+
+.container{
+  max-width:1100px;
+  margin:auto;
+  padding:18px;
+}
+
+.tabs{
+  display:flex;
+  gap:8px;
+  overflow-x:auto;
+  margin-bottom:18px;
+}
+.tabs button{
+  border:0;
+  padding:12px 16px;
+  border-radius:10px;
+  background:white;
+  color:#334155;
+  font-weight:bold;
+  white-space:nowrap;
+}
+.tabs button.active{
+  background:#2563eb;
+  color:white;
+}
+
+.section{display:none}
+.section.active{display:block}
+
+.grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(230px,1fr));
+  gap:15px;
+}
+
+.card{
+  background:white;
+  border-radius:15px;
+  padding:18px;
+  box-shadow:0 4px 15px rgba(0,0,0,.07);
+  margin-bottom:16px;
+}
+
+.stat{
+  font-size:30px;
+  font-weight:bold;
+  color:#2563eb;
+}
+
+label{
+  display:block;
+  font-weight:bold;
+  margin:12px 0 6px;
+}
+input,textarea,select{
+  width:100%;
+  padding:12px;
+  border:1px solid #d6dce5;
+  border-radius:9px;
+  font-size:15px;
+}
+textarea{min-height:110px;resize:vertical}
+
+button.primary{
+  background:#2563eb;
+  color:white;
+  border:0;
+  padding:12px 18px;
+  border-radius:9px;
+  font-weight:bold;
+  margin-top:12px;
+}
+button.success{
+  background:#16a34a;
+  color:white;
+  border:0;
+  padding:12px 18px;
+  border-radius:9px;
+  font-weight:bold;
+}
+button.warning{
+  background:#f59e0b;
+  color:white;
+  border:0;
+  padding:12px 18px;
+  border-radius:9px;
+  font-weight:bold;
+}
+
+.agenda-item{
+  border-left:5px solid #2563eb;
+  background:#f8fafc;
+  padding:14px;
+  margin:10px 0;
+  border-radius:8px;
+}
+
+.live{
+  border:2px solid #16a34a;
+  background:#f0fdf4;
+}
+
+.badge{
+  display:inline-block;
+  padding:5px 9px;
+  border-radius:20px;
+  background:#dbeafe;
+  color:#1d4ed8;
+  font-size:12px;
+  font-weight:bold;
+}
+
+.current{
+  font-size:24px;
+  font-weight:bold;
+}
+
+.clock{
+  font-size:42px;
+  font-weight:bold;
+  text-align:center;
+  margin:10px;
+}
+
+.ai-output{
+  background:#0f172a;
+  color:#e2e8f0;
+  padding:18px;
+  border-radius:12px;
+  white-space:pre-wrap;
+  min-height:120px;
+  margin-top:15px;
+}
+
+.notice{
+  background:#fff7ed;
+  border-left:5px solid #f97316;
+  padding:15px;
+  border-radius:8px;
+  margin-top:15px;
+}
+
+footer{
+  text-align:center;
+  padding:30px;
+  color:#64748b;
+}
+
+@media(max-width:600px){
+  header h1{font-size:24px}
+  .container{padding:12px}
+  .clock{font-size:34px}
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <h1>🎤 StageFlow AI</h1>
+  <p>Smart Anchor & Stage Flow Management System</p>
+</header>
+
+<div class="container">
+
+<div class="tabs">
+  <button class="active" onclick="showTab('dashboard',this)">Dashboard</button>
+  <button onclick="showTab('event',this)">Event</button>
+  <button onclick="showTab('agenda',this)">Agenda</button>
+  <button onclick="showTab('speakers',this)">Speakers</button>
+  <button onclick="showTab('ai',this)">AI Scripts</button>
+  <button onclick="showTab('live',this)">Live Stage</button>
+</div>
+
+<!-- DASHBOARD -->
+<section id="dashboard" class="section active">
+
+<div class="grid">
+  <div class="card">
+    <div>Event</div>
+    <div class="stat" id="dashEvent">Hackathon</div>
+  </div>
+
+  <div class="card">
+    <div>Agenda Items</div>
+    <div class="stat" id="agendaCount">0</div>
+  </div>
+
+  <div class="card">
+    <div>Speakers</div>
+    <div class="stat" id="speakerCount">0</div>
+  </div>
+
+  <div class="card">
+    <div>Current Activity</div>
+    <div class="stat" id="dashCurrent">Ready</div>
+  </div>
+</div>
+
+<div class="card">
+<h2>📢 Quick Announcement</h2>
+<input id="announcement" placeholder="Type an announcement...">
+<button class="primary" onclick="makeAnnouncement()">Broadcast Announcement</button>
+<div id="announcementResult"></div>
+</div>
+
+</section>
+
+<!-- EVENT -->
+<section id="event" class="section">
+
+<div class="card">
+<h2>📅 Event Management</h2>
+
+<label>Event Name</label>
+<input id="eventName" value="Code Vidya Hack Days">
+
+<label>Venue</label>
+<input id="venue" value="CSJMU University">
+
+<label>Event Date</label>
+<input id="eventDate" type="date">
+
+<label>Organizer</label>
+<input id="organizer" value="Code Vidya">
+
+<button class="primary" onclick="saveEvent()">Save Event</button>
+
+<p id="eventSaved"></p>
+</div>
+
+</section>
+
+<!-- AGENDA -->
+<section id="agenda" class="section">
+
+<div class="card">
+<h2>📝 Add Agenda Activity</h2>
+
+<label>Activity</label>
+<input id="activity" placeholder="e.g. Opening Ceremony">
+
+<label>Speaker / Person</label>
+<input id="activitySpeaker" placeholder="e.g. Dr. Sharma">
+
+<label>Time</label>
+<input id="activityTime" type="time">
+
+<label>Duration (minutes)</label>
+<input id="activityDuration" type="number" value="10">
+
+<button class="primary" onclick="addAgenda()">Add to Agenda</button>
+</div>
+
+<div class="card">
+<h2>Today's Agenda</h2>
+<div id="agendaList"></div>
+</div>
+
+</section>
+
+<!-- SPEAKERS -->
+<section id="speakers" class="section">
+
+<div class="card">
+<h2>🎤 Speaker Management</h2>
+
+<label>Speaker Name</label>
+<input id="speakerName" placeholder="Full name">
+
+<label>Designation</label>
+<input id="speakerRole" placeholder="Professor / Guest / Mentor">
+
+<label>Organization</label>
+<input id="speakerOrg" placeholder="Organization">
+
+<button class="primary" onclick="addSpeaker()">Add Speaker</button>
+</div>
+
+<div class="card">
+<h2>Guest List</h2>
+<div id="speakerList"></div>
+</div>
+
+</section>
+
+<!-- AI -->
+<section id="ai" class="section">
+
+<div class="card">
+<h2>🤖 AI Script Generator</h2>
+
+<p>
+Generate context-aware scripts for the anchor based on the current event.
+</p>
+
+<label>Script Type</label>
+<select id="scriptType">
+<option value="opening">Opening Script</option>
+<option value="introduction">Speaker Introduction</option>
+<option value="transition">Transition Script</option>
+<option value="closing">Closing Script</option>
+<option value="delay">Delay Announcement</option>
+</select>
+
+<label>Context / Instructions</label>
+<textarea id="aiContext" placeholder="Example: Introduce the next guest speaker and smoothly transition from the hackathon briefing."></textarea>
+
+<button class="primary" onclick="generateScript()">✨ Generate AI Script</button>
+
+<div id="aiOutput" class="ai-output">
+Your generated script will appear here.
+</div>
+
+<p style="font-size:13px;color:#64748b">
+Demo mode uses contextual script generation. An API key can be connected later for a live Gemini-powered workflow.
+</p>
+
+</div>
+
+</section>
+
+<!-- LIVE -->
+<section id="live" class="section">
+
+<div class="card live">
+
+<h2>🔴 LIVE STAGE DASHBOARD</h2>
+
+<div class="clock" id="clock">00:00:00</div>
+
+<p>Current Activity</p>
+<div class="current" id="liveCurrent">No activity selected</div>
+
+<p>Speaker</p>
+<div id="liveSpeaker">—</div>
+
+<hr>
+
+<p>Next Activity</p>
+<div id="nextActivity">—</div>
+
+<button class="success" onclick="startNext()">▶ Start Next Activity</button>
+
+<button class="warning" onclick="delayEvent()">⏱ Report 5-Minute Delay</button>
+
+<div id="delayNotice"></div>
+
+</div>
+
+<div class="card">
+<h2>📋 Live Agenda</h2>
+<div id="liveAgenda"></div>
+</div>
+
+</section>
+
+</div>
+
+<footer>
+StageFlow AI • PS1 • Code Vidya Hack Days
+</footer>
+
+<script>
+
+let agenda = JSON.parse(localStorage.getItem("stageflow_agenda") || "[]");
+let speakers = JSON.parse(localStorage.getItem("stageflow_speakers") || "[]");
+
+let eventData = JSON.parse(
+  localStorage.getItem("stageflow_event") ||
+  '{"name":"Code Vidya Hack Days","venue":"CSJMU University"}'
+);
+
+let currentIndex = -1;
+
+function showTab(id,btn){
+
+document.querySelectorAll(".section").forEach(
+s=>s.classList.remove("active")
+);
+
+document.getElementById(id).classList.add("active");
+
+document.querySelectorAll(".tabs button").forEach(
+b=>b.classList.remove("active")
+);
+
+btn.classList.add("active");
+
+if(id==="live") renderLive();
+}
+
+function saveEvent(){
+
+eventData={
+name:document.getElementById("eventName").value,
+venue:document.getElementById("venue").value,
+date:document.getElementById("eventDate").value,
+organizer:document.getElementById("organizer").value
+};
+
+localStorage.setItem(
+"stageflow_event",
+JSON.stringify(eventData)
+);
+
+document.getElementById("dashEvent").textContent=eventData.name;
+
+document.getElementById("eventSaved").innerHTML=
+"✅ Event saved successfully!";
+}
+
+function addAgenda(){
+
+const activity=document.getElementById("activity").value;
+const speaker=document.getElementById("activitySpeaker").value;
+const time=document.getElementById("activityTime").value;
+const duration=document.getElementById("activityDuration").value;
+
+if(!activity){
+alert("Please enter an activity.");
+return;
+}
+
+agenda.push({
+activity,
+speaker,
+time,
+duration,
+status:"upcoming"
+});
+
+localStorage.setItem(
+"stageflow_agenda",
+JSON.stringify(agenda)
+);
+
+document.getElementById("activity").value="";
+document.getElementById("activitySpeaker").value="";
+
+renderAgenda();
+}
+
+function renderAgenda(){
+
+const list=document.getElementById("agendaList");
+
+if(agenda.length===0){
+list.innerHTML="<p>No agenda items yet.</p>";
+}else{
+
+list.innerHTML=agenda.map((a,i)=>`
+<div class="agenda-item">
+<span class="badge">${a.status}</span>
+<h3>${i+1}. ${a.activity}</h3>
+<p>🎤 ${a.speaker || "Anchor"}</p>
+<p>⏰ ${a.time || "Flexible"} • ${a.duration} min</p>
+<button onclick="removeAgenda(${i})">Remove</button>
+</div>
+`).join("");
+}
+
+document.getElementById("agendaCount").textContent=agenda.length;
+
+renderLive();
+}
+
+function removeAgenda(i){
+
+agenda.splice(i,1);
+
+localStorage.setItem(
+"stageflow_agenda",
+JSON.stringify(agenda)
+);
+
+renderAgenda();
+}
+
+function addSpeaker(){
+
+const name=document.getElementById("speakerName").value;
+const role=document.getElementById("speakerRole").value;
+const org=document.getElementById("speakerOrg").value;
+
+if(!name){
+alert("Please enter speaker name.");
+return;
+}
+
+speakers.push({name,role,org});
+
+localStorage.setItem(
+"stageflow_speakers",
+JSON.stringify(speakers)
+);
+
+document.getElementById("speakerName").value="";
+document.getElementById("speakerRole").value="";
+document.getElementById("speakerOrg").value="";
+
+renderSpeakers();
+}
+
+function renderSpeakers(){
+
+const list=document.getElementById("speakerList");
+
+if(speakers.length===0){
+list.innerHTML="<p>No speakers added.</p>";
+}else{
+
+list.innerHTML=speakers.map((s,i)=>`
+<div class="agenda-item">
+<h3>🎤 ${s.name}</h3>
+<p>${s.role || "Guest"} ${s.org ? "• "+s.org : ""}</p>
+<button onclick="removeSpeaker(${i})">Remove</button>
+</div>
+`).join("");
+}
+
+document.getElementById("speakerCount").textContent=speakers.length;
+}
+
+function removeSpeaker(i){
+
+speakers.splice(i,1);
+
+localStorage.setItem(
+"stageflow_speakers",
+JSON.stringify(speakers)
+);
+
+renderSpeakers();
+}
+
+function generateScript(){
+
+const type=document.getElementById("scriptType").value;
+const context=document.getElementById("aiContext").value;
+
+const event=eventData.name || "today's event";
+
+let speaker="our respected guest";
+
+if(speakers.length>0){
+speaker=speakers[speakers.length-1].name;
+}
+
+let script="";
+
+if(type==="opening"){
+
+script=
+`Good morning everyone!
+
+It is my pleasure to welcome you all to ${event}.
+
+We are delighted to have our participants, mentors, speakers and organizers with us today.
+
+Let's begin this exciting event with energy, enthusiasm and a great spirit of collaboration.
+
+${context ? "Context: "+context : ""}`;
+
+}
+
+else if(type==="introduction"){
+
+script=
+`Ladies and gentlemen, it is now time to welcome ${speaker}.
+
+${speaker} brings valuable experience and knowledge to our event.
+
+Please join me in giving a warm welcome to our guest.
+
+${context ? context : ""}`;
+
+}
+
+else if(type==="transition"){
+
+script=
+`Thank you for that wonderful session.
+
+We will now smoothly move to the next part of our program.
+
+I request everyone to stay with us as we continue with ${agenda.length ? agenda[Math.max(currentIndex+1,0)].activity : "the next activity"}.
+
+${context ? context : ""}`;
+
+}
+
+else if(type==="closing"){
+
+script=
+`As we come towards the end of ${event}, I would like to thank our speakers, mentors, organizers and every participant.
+
+Your enthusiasm and participation made this event meaningful.
+
+Thank you everyone, and we hope to see you again at our future events.`;
+
+}
+
+else if(type==="delay"){
+
+script=
+`Attention everyone.
+
+Due to an unexpected schedule change, our next activity will begin shortly.
+
+We appreciate your patience and request everyone to remain seated.
+
+We will resume the program as soon as possible.
+
+${context ? context : ""}`;
+
+}
+
+document.getElementById("aiOutput").textContent=script;
+}
+
+function makeAnnouncement(){
+
+const text=document.getElementById("announcement").value;
+
+if(!text){
+alert("Enter an announcement first.");
+return;
+}
+
+document.getElementById("announcementResult").innerHTML=
+`<div class="notice">📢 <b>LIVE ANNOUNCEMENT:</b><br>${escapeHTML(text)}</div>`;
+
+document.getElementById("announcement").value="";
+}
+
+function startNext(){
+
+if(agenda.length===0){
+alert("Add agenda items first.");
+return;
+}
+
+if(currentIndex>=0 && currentIndex<agenda.length){
+agenda[currentIndex].status="completed";
+}
+
+currentIndex++;
+
+if(currentIndex>=agenda.length){
+currentIndex=agenda.length-1;
+}
+
+agenda[currentIndex].status="live";
+
+localStorage.setItem(
+"stageflow_agenda",
+JSON.stringify(agenda)
+);
+
+renderAgenda();
+renderLive();
+}
+
+function delayEvent(){
+
+document.getElementById("delayNotice").innerHTML=
+`<div class="notice">
+⚠️ <b>5-minute delay recorded.</b><br>
+The anchor should inform the audience and adjust the upcoming schedule.
+</div>`;
+
+generateDelayScript();
+}
+
+function generateDelayScript(){
+
+document.getElementById("scriptType").value="delay";
+
+document.getElementById("aiContext").value=
+"The program has been delayed by 5 minutes. Keep the audience calm and engaged.";
+
+generateScript();
+}
+
+function renderLive(){
+
+const current=document.getElementById("liveCurrent");
+const speaker=document.getElementById("liveSpeaker");
+const next=document.getElementById("nextActivity");
+
+if(currentIndex>=0 && agenda[currentIndex]){
+
+current.textContent=agenda[currentIndex].activity;
+speaker.textContent=agenda[currentIndex].speaker || "Anchor";
+
+}else{
+
+current.textContent="No activity selected";
+speaker.textContent="—";
+
+}
+
+const nextIndex=currentIndex+1;
+
+if(agenda[nextIndex]){
+next.textContent=
+agenda[nextIndex].activity+
+" • "+(agenda[nextIndex].time || "Flexible");
+}else{
+next.textContent="No upcoming activity";
+}
+
+document.getElementById("dashCurrent").textContent=
+current.textContent;
+
+const liveAgenda=document.getElementById("liveAgenda");
+
+liveAgenda.innerHTML=agenda.map((a,i)=>`
+<div class="agenda-item">
+<span class="badge">${a.status}</span>
+<b>${i+1}. ${a.activity}</b>
+<br>
+<small>🎤 ${a.speaker || "Anchor"} • ⏰ ${a.time || "Flexible"}</small>
+</div>
+`).join("");
+}
+
+function escapeHTML(str){
+
+return str
+.replaceAll("&","&amp;")
+.replaceAll("<","&lt;")
+.replaceAll(">","&gt;")
+.replaceAll('"',"&quot;")
+.replaceAll("'","&#039;");
+}
+
+function updateClock(){
+
+const now=new Date();
+
+document.getElementById("clock").textContent=
+now.toLocaleTimeString();
+
+}
+
+setInterval(updateClock,1000);
+updateClock();
+
+renderAgenda();
+renderSpeakers();
+
+document.getElementById("dashEvent").textContent=
+eventData.name || "Code Vidya Hack Days";
+
+</script>
+
+</body>
+        </html>
+  
